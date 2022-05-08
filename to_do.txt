@@ -1,0 +1,15 @@
+To do:
+  
+  SPLOŠNO:
+  - dodati je treba še legende vsem grafom
+  - če pogledaš v file-u electricity: iz tam sem vzela prediction, ful je fajn narejen decomposition tam,
+    pa tam sem se zavedla, da na koncu ko delaš prediction, če delaš na logaritmih moraš na koncu dat nazaj exp(x)
+  - v 
+
+
+  PO TOČKAH:
+  - 9. točka ni dokončana
+  - če pogledaš 492 vrstico v poročilu, sem probala dodat linearni trend, pa ne gre
+  
+  
+****Vse kar sem delala je v poročilu, pomoje bolš, da delava direkt v poročilu vse, da bo manj dela!  
