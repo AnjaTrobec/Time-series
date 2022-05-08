@@ -1,5 +1,6 @@
 ---
-title: "Časovne vrste seminar"
+title: "Časovne vrste - seminar"
+subtitle: "Poročilo o analizi časovnih vrst"
 author: "Brina Pirc in Anja Trobec"
 date: "Maj 2022"
 output:
