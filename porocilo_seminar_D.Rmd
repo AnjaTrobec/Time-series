@@ -104,9 +104,6 @@ print(komentar)
 
 perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
 perioda2 <- periodogram(d)$periodogram[208] #ni statistično značilna!
-# perioda3 <- periodogram(x)$periodogram[206]
-# perioda4 <- periodogram(x)$periodogram[209]
-# perioda5 <- periodogram(x)$periodogram[205]  
 
 t <- time(d)
 mod.H2 <- lm(d ~  I(sin(perioda*t)) + I(cos(perioda*t)))
@@ -197,6 +194,8 @@ points(d.fit,col="red",type="o",pch=16,cex=0.5)
 ```
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+# DECOMPOSITION ČASOVNE VRSTE, a misliš, da bi blo to fajn?
+
 # par(mfrow=c(2,1))
 # 
 # my.trend <- function(t){coefficients(mod.H2)[1] + coefficients(mod.H2)[2] * t}
@@ -220,32 +219,32 @@ points(d.fit,col="red",type="o",pch=16,cex=0.5)
 ```
 
 
-<h5> 3. TOČKA: Narišite graf rezidualov in komentirajte, ali so videti stacionarni. Stacionarnost tudi preizkusite z uporabo ustreznih statističnih metod. </h5>
+<h5> 3. Narišite graf rezidualov in komentirajte, ali so videti stacionarni. Stacionarnost tudi preizkusite z uporabo ustreznih statističnih metod. </h5>
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 
-plot(x.res, main="Residuals")
-
-summary(mod.H)$adj.r.squared
-
-plot(x.res, main= 'Residuali časovne vrste A', ylab="Residuals",type='l')
-
-abline(h=mean(x.res),col="blue")
-abline(h=c(mean(x.res)-sd(x.res),mean(x.res)+sd(x.res)),col="blue",lty="dotted")
-
-
-library(tseries)
-# Augmented Dickey-Fuller Test za preverjanje stacionarnosti
-adf.test(x.res,alternative="stationary")
-# we say: ro - 1 = gamma
-# Ho : gamma = 0 -> random walk (not stationary)
-# H1 : gamma < 0 -> stationary series
-
-# this test is only appropriate if we remove seasonal and trend component
-# result: we reject Ho, so series is stationary!
-
-komentar <- paste('Augmented Dickey-Fuller Test ne zavrne stacionarnosti.')
-print(komentar)
+# plot(x.res, main="Residuals")
+# 
+# summary(mod.H)$adj.r.squared
+# 
+# plot(x.res, main= 'Residuali časovne vrste A', ylab="Residuals",type='l')
+# 
+# abline(h=mean(x.res),col="blue")
+# abline(h=c(mean(x.res)-sd(x.res),mean(x.res)+sd(x.res)),col="blue",lty="dotted")
+# 
+# 
+# library(tseries)
+# # Augmented Dickey-Fuller Test za preverjanje stacionarnosti
+# adf.test(x.res,alternative="stationary")
+# # we say: ro - 1 = gamma
+# # Ho : gamma = 0 -> random walk (not stationary)
+# # H1 : gamma < 0 -> stationary series
+# 
+# # this test is only appropriate if we remove seasonal and trend component
+# # result: we reject Ho, so series is stationary!
+# 
+# komentar <- paste('Augmented Dickey-Fuller Test ne zavrne stacionarnosti.')
+# print(komentar)
 
 
 ```
@@ -277,13 +276,13 @@ print(komentar)
 ```
 
 
-<h5> 4. TOČKA: Na rezidualih naredite grafikona ACF in PACF in na njuni podlagi predlagajte vsaj en model vrste AR(p) ali MA(q). </h5>
+<h5> 4. Na rezidualih naredite grafikona ACF in PACF in na njuni podlagi predlagajte vsaj en model vrste AR(p) ali MA(q). </h5>
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 library(forecast)
 
-Acf(d.res, main = "Acf residuals") #MA(1)?
-Pacf(d.res, main = "Pacf residuals") #no idea
+Acf(d.res, main = "Acf residuals") #MA(1)
+Pacf(d.res, main = "Pacf residuals") #AR(10)
 
 #PREDLOG MODELA:
 komentar <- paste('Brina, v tem delu mi gre na jok. No zdej ne več, sam še vedno nevem ker model bi predlagala zares iz teh slik.')
@@ -291,7 +290,7 @@ print(komentar)
 
 ```
 
-<h5> 5. TOČKA: Na podlagi Yule–Walkerjevih cenilk in kriterija AIC izberite najboljši model AR(p). Primerjajte ga z najboljšim modelom ARMA(p, q) za p + q ≤ 3 po kriteriju AIC (pozor: kriterij AIC je lahko definiran drugače od postopka do postopka). Če je videti smiselno, pa namesto tega uporabite model GARCH. </h5>
+<h5> 5. Na podlagi Yule–Walkerjevih cenilk in kriterija AIC izberite najboljši model AR(p). Primerjajte ga z najboljšim modelom ARMA(p, q) za p + q ≤ 3 po kriteriju AIC (pozor: kriterij AIC je lahko definiran drugače od postopka do postopka). Če je videti smiselno, pa namesto tega uporabite model GARCH. </h5>
 
 ```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
 # # ==========
@@ -376,7 +375,7 @@ print(komentar)
 ```
 
 
-<h5> 6. TOČKA: Izberite »optimalni« model in ocenite vse njegove parametre. </h5>
+<h5> 6. Izberite »optimalni« model in ocenite vse njegove parametre. </h5>
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 # OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to AR(3). Druga možna izbira bi bila model z MA(1) in AR(2).
@@ -468,7 +467,6 @@ print(komentar)
 
 <h1> DATOTEKA B </h1>
 
-
 <h5> 1. *Narišite graf in komentirajte, ali se iz njega vidi kakšen trend ali sezonskost.* </h5>
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 file2 <- file("B09los.txt")
@@ -477,7 +475,7 @@ data2 <- as.numeric(unlist(strsplit(str_data2, " ")))
 x <- ts(data2)
 
 # vsa opazovanja:
-plot(x, main="Časovna vrsta podatki b, vsa opazovanja", type='l')
+plot(x, main="Časovna vrsta podatki B, vsa opazovanja", type='l')
 
 komentar <- paste('Opazimo trend, na prvi pogled ne opazimo sezonskosti.')
 print(komentar)
@@ -503,6 +501,9 @@ plot(d, main='Diference časovne vrste B', xlim = c(0,100), ylab=expression(past
 
 abline(h=mean(d),col="blue")
 abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
+```
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 
 perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
 
@@ -529,7 +530,6 @@ points(d.fit,col="red",type="o",pch=16,cex=0.5)
 <h5> 3. *Narišite graf rezidualov in komentirajte, ali so videti stacionarni. Stacionarnost tudi preizkusite z uporabo ustreznih statističnih metod.* </h5>
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
-
 # plot(x.res, main="Residuals")
 # 
 # summary(mod.H)$adj.r.squared
@@ -538,7 +538,6 @@ points(d.fit,col="red",type="o",pch=16,cex=0.5)
 # 
 # abline(h=mean(x.res),col="blue")
 # abline(h=c(mean(x.res)-sd(x.res),mean(x.res)+sd(x.res)),col="blue",lty="dotted")
-# 
 # 
 # library(tseries)
 # # Augmented Dickey-Fuller Test za preverjanje stacionarnosti
@@ -792,6 +791,7 @@ legend("topright",
 # plot(append(x, better_gaussian), type="l", xlim=c(700,850))
 
 ```
+
 
 
 
