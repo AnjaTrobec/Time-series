@@ -34,10 +34,10 @@ setwd("C:/Users/aanja/OneDrive/Dokumenti/fmf/magisterij/časovne vrste/seminar/T
 
 <h5> 1. Narišite graf in komentirajte, ali se iz njega vidi kakšen trend ali sezonskost. </h5>
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
-file2 <- file("A09tri.txt")
-str_data2 <- readLines(file2)
-data2 <- as.numeric(unlist(strsplit(str_data2, " ")))
-x <- ts(data2)
+file1 <- file("A09tri.txt")
+str_data1 <- readLines(file1)
+data1 <- as.numeric(unlist(strsplit(str_data1, " ")))
+x <- ts(data1)
 
 # vsa opazovanja:
 plot(x, main="Časovna vrsta podatki A, vsa opazovanja", ylim = c(-100,2000), type='l')
@@ -63,7 +63,7 @@ diferenciranje:
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 #Opazujmo diference
 d <- diff(x)
-plot(d, main='Diference časovne vrste A', xlim = c(0,100), ylab=expression(paste(nabla,x[t]," [pp]")),type='l')
+plot(d, main='Diference časovne vrste A', xlim = c(0,100), ylab=expression(paste(nabla,x[t])),type='l')
 
 abline(h=mean(d),col="blue")
 abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
@@ -72,11 +72,10 @@ abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
 # A lahko naredimo periodogram na razlikah, ker pride ful lepše!!
 
 perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
-perioda2 <- periodogram(d)$periodogram[208] #ni statistično značilna!
+perioda2 <- periodogram(d)$periodogram[348] #ni statistično značilna!
 
 t <- time(d)
-mod.H2 <- lm(d ~  I(sin(perioda*t)) + I(cos(perioda*t)))
-summary(mod.H2)
+summary(mod.H2 <- lm(d ~  I(sin(perioda*t)) + I(cos(perioda*t))))
 
 d.fit <- mod.H2$fitted.values
 d.res <- mod.H2$residuals
@@ -220,7 +219,7 @@ print(komentar)
 library(forecast)
 
 Acf(d.res, main = "Acf residuals") #MA(1)
-Pacf(d.res, main = "Pacf residuals") #AR(3)
+Pacf(d.res, main = "Pacf residuals") #AR(3) # zdej spet pride 10??
 
 #PREDLOG MODELA:
 komentar <- paste('Predlagava izbiro modela MA(1) in AR(3), torej ARMA(1,3).')
@@ -715,9 +714,9 @@ print(komentar)
 
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
-#Opazujmo diference
+#Opazujmo logaritem
 d <- log(x)
-plot(d, main='Diference časovne vrste B', xlim = c(0,100), ylab=expression(paste(nabla,x[t]," [pp]")),type='l')
+plot(d, main='Logaritem časovne vrste B', xlim = c(0,100), ylab=expression(paste(nabla,x[t])),type='l')
 
 abline(h=mean(d),col="blue")
 abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
@@ -726,11 +725,14 @@ perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)]
 perioda2 <- periodogram(d)$lambda[5]
 perioda3 <- periodogram(d)$lambda[2]
 perioda4 <- periodogram(d)$lambda[4]
-
+perioda5 <- periodogram(d)$lambda[64]
+perioda6 <- periodogram(d)$lambda[99]
+perioda7 <- periodogram(d)$lambda[10]
 
 t <- time(d)
-mod.H2 <- lm(d ~  I(sin(perioda*t)) + I(cos(perioda*t)) + I(sin(perioda2*t)) + I(cos(perioda2*t)) +I(sin(perioda3*t)) + I(cos(perioda3*t)) + I(sin(perioda4*t)) + I(cos(perioda4*t)))
-summary(mod.H2)
+summary(lm(d ~ t))
+
+summary(mod.H2 <- lm(d ~ t + I(cos(perioda2*t)) + I(cos(perioda3*t)) + I(cos(perioda4*t)) + I(sin(perioda5*t)) + I(cos(perioda6*t))))
 
 d.fit <- mod.H2$fitted.values
 d.res <- mod.H2$residuals
@@ -751,11 +753,7 @@ points(d.fit,col="red",type="o",pch=16,cex=0.5)
 3. *Narišite graf rezidualov in komentirajte, ali so videti stacionarni. Stacionarnost tudi preizkusite z uporabo ustreznih statističnih metod.*
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
-
-plot(d.res, main="Residuals")
-
 summary(mod.H2)$adj.r.squared
-
 plot(d.res, main= 'Residuali časovne vrste B', ylab="Residuals",type='l')
 
 abline(h=mean(d.res),col="blue")
@@ -778,44 +776,13 @@ print(komentar)
 
 ```
 
-```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
-
-plot(d.res, main="Residuals")
-
-summary(mod.H2)$adj.r.squared
-
-plot(d.res, main= 'Residuali časovne vrste B', ylab="Residuals",type='l')
-
-abline(h=mean(d.res),col="blue")
-abline(h=c(mean(d.res)-sd(d.res),mean(d.res)+sd(d.res)),col="blue",lty="dotted")
-
-
-library(tseries)
-# Augmented Dickey-Fuller Test za preverjanje stacionarnosti
-adf.test(d.res,alternative="stationary")
-# we say: ro - 1 = gamma 
-# Ho : gamma = 0 -> random walk (not stationary)
-# H1 : gamma < 0 -> stationary series
-
-# this test is only appropriate if we remove seasonal and trend component
-# result: we reject Ho, so series is stationary!
-
-#p-value = 0.01
-
-komentar <- paste('Augmented Dickey-Fuller Test ne zavrne stacionarnosti.')
-print(komentar)
-
-
-```
-
 4. *Na rezidualih naredite grafikona ACF in PACF in na njuni podlagi predlagajte vsaj en model vrste AR(p) ali MA(q).*
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 library(forecast)
 
-Acf(d.res, main = "Acf residuals") #MA(5) ali MA(7), to se mi zdi čudno
+Acf(d.res, main = "Acf residuals") #MA(5) ali MA(7), to se mi zdi čudno: ne nič od tega
 Pacf(d.res, main = "Pacf residuals") #AR(5)? ne bi smeli dobit še enga ven pri cca. 12, to je slabo
-
 
 
 #PREDLOG MODELA:
@@ -830,6 +797,15 @@ print(komentar)
 komentar <- paste('Profesor Toman je bil bolj eleganten in se je iskanja rešitve lotil s preprosto zanko.')
 print(komentar)
 
+arima(d.res, order=c(1,0,1))
+
+for (i in 0:3) {
+  for (j in 0:3) {
+    print(c(arima(d.res, order = c(i,0,j))$aic,i,j))
+  }
+}
+
+
 # my.arma <- stats::arima(d,order=c(1,0,1),include.mean=FALSE,method="ML")
 # 
 # AIC(my.arma)
@@ -841,9 +817,7 @@ print(komentar)
 # 
 # for(i in 1:3){
 #     for(j in 1:3){
-#         my.arma <- stats::arima(d,order=c(i-1,0,j-1),include.mean=FALSE,method="ML")
-#         ic.values[i,j] <- AIC(my.arma)
-#         remove(my.arma)
+#         arima(d,order=c(i,0,j),include.mean=FALSE,method="ML")
 #     }
 # }
 # 
