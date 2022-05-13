@@ -647,7 +647,7 @@ my.arma <- stats::arima(d,order=c(0,0,0),include.mean=FALSE,method="ML")
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 # OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to AR(3). Druga možna izbira bi bila model z MA(1) in AR(2).
-komentar <- paste('OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to ARMA(1,1).')
+komentar <- paste('OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to ARMA(0,0).')
 print(komentar)
 
 best <- arima(d.res, order=c(0,0,0))
