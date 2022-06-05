@@ -6,7 +6,5 @@ To do:
 
 
   PO TOČKAH:
-  - 9. točka ni dokončana
-  - če pogledaš 492 vrstico v poročilu, sem probala dodat linearni trend, pa ne gre
-  - 8. točka: poveži napoved!
+  - 
   

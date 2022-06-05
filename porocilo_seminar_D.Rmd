@@ -65,11 +65,10 @@ p <-  periodogram(x)$lambda[which.max(periodogram(x)$periodogram)]
 p2 <- periodogram(x)$periodogram[208] #ni statistično značilna!
 # perioda3 <- periodogram(x)$periodogram[206]
 # perioda4 <- periodogram(x)$periodogram[209]
-# perioda5 <- periodogram(x)$periodogram[205]  
+# perioda5 <- periodogram(x)$periodogram[205]
 
 t <- time(x)
-mod.H <- lm(x ~  I(sin(p*t)) + I(cos(p*t)) + I(sin(p2*t)) + I(cos(p2*t)))
-summary(mod.H)
+summary(mod.H <- lm(x ~ I(sin(p*t)) + I(cos(p*t))))
 
 x.fit <- mod.H$fitted.values
 x.res <- mod.H$residuals
@@ -77,40 +76,52 @@ x.res <- mod.H$residuals
 x.fit <- ts(x.fit,start=start(x),frequency=frequency(x))
 x.res <- ts(x.res,start=start(x),frequency=frequency(x))
 
-
-
-
-
-#Opazujmo diference
-d <- diff(x)
-plot(d, main='Diference časovne vrste A', xlim = c(0,100), ylab=expression(paste(nabla,x[t])),type='l')
-
-abline(h=mean(d),col="blue")
-abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
-
 # periodogram(x)
 # A lahko naredimo periodogram na razlikah, ker pride ful lepše!!
 
-perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
-perioda2 <- periodogram(d)$periodogram[348] #ni statistično značilna!
-
-t <- time(d)
-summary(mod.H2 <- lm(d ~  I(sin(perioda*t)) + I(cos(perioda*t))))
-
-d.fit <- mod.H2$fitted.values
-d.res <- mod.H2$residuals
-
-d.fit <- ts(d.fit,start=start(d),frequency=frequency(d))
-d.res <- ts(d.res,start=start(d),frequency=frequency(d))
-
 par(mfrow=c(1,1))
-plot(d, type='l')
-points(d.fit,col="red",type="o",pch=16,cex=0.5)
+plot(x, type='l')
+points(x.fit,col="red",type="o",pch=16,cex=0.5)
 par(mfrow=c(1,1))
-plot(d, type='l', xlim=c(0,100))
-points(d.fit,col="red",type="o",pch=16,cex=0.5)
+plot(x, type='l', xlim=c(0,600))
+points(x.fit,col="red",type="o",pch=16,cex=0.5)
 
 ```
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+# # DIFERENCE GREJO VEN
+# d <- diff(x)
+# plot(d, main='Diference časovne vrste A', xlim = c(0,100), ylab=expression(paste(nabla,x[t])),type='l')
+# 
+# abline(h=mean(d),col="blue")
+# abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
+# 
+# # periodogram(x)
+# # A lahko naredimo periodogram na razlikah, ker pride ful lepše!!
+# 
+# perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
+# perioda2 <- periodogram(d)$periodogram[348] #ni statistično značilna!
+# 
+# t <- time(d)
+# summary(mod.H2 <- lm(d ~  I(sin(perioda*t)) + I(cos(perioda*t))))
+# 
+# d.fit <- mod.H2$fitted.values
+# d.res <- mod.H2$residuals
+# 
+# d.fit <- ts(d.fit,start=start(d),frequency=frequency(d))
+# d.res <- ts(d.res,start=start(d),frequency=frequency(d))
+# 
+# par(mfrow=c(1,1))
+# plot(d, type='l')
+# points(d.fit,col="red",type="o",pch=16,cex=0.5)
+# par(mfrow=c(1,1))
+# plot(d, type='l', xlim=c(0,100))
+# points(d.fit,col="red",type="o",pch=16,cex=0.5)
+```
+
+
+
+
 
 ```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
 # Smoothed periodogram
@@ -158,7 +169,7 @@ spectrum(x,
          taper=0,
          xlim=c(0.22,0.28))
 
-x.sp <- spectrum(d,
+x.sp <- spectrum(x,
                  kernel=kernel(coef='daniell', m=c(3,3)),
                  log="no",
                  demean=TRUE,
@@ -177,6 +188,8 @@ x.sp$freq[c(216,217,215,218)]
 # Period
 1/x.sp$freq[c(216,217,215,218)]
 
+# perioda je 4!!
+
 ```
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
@@ -184,16 +197,16 @@ x.sp$freq[c(216,217,215,218)]
 
 par(mfrow=c(2,1))
 
-my.trend <- function(t){coefficients(mod.H2)[1]}
+my.trend <- function(t){coefficients(mod.H)[1]}
 
-plot(rep(my.trend(1), length(mod.H2)), type="l",
+plot(rep(my.trend(1), length(mod.H)), type="l",
       main="Time series decomposition",
       xlab="Time",
       ylab="Trend")
 
-my.season <- function(t){coefficients(mod.H2)[2]*sin(perioda*t) + coefficients(mod.H2)[3] * cos(perioda*t)}
+my.season <- function(t){coefficients(mod.H)[2]*sin(p*t) + coefficients(mod.H)[3]*cos(p*t)}
 
-curve(my.season,from=0, to=length(mod.H2),
+curve(my.season,from=0, to=length(mod.H),
       main="Time series decomposition",
       xlab="Time",
       ylab="Season")
@@ -207,17 +220,23 @@ par(mfrow=c(1,1))
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 #analiza residualov
-summary(mod.H2)$adj.r.squared
-plot(d.res, main= 'Residuali časovne vrste A', ylab="Residuals",type='l')
+summary(mod.H)$adj.r.squared
+plot(x.res, main= 'Residuali časovne vrste A', ylab="Residuals",type='l')
 
-abline(h=mean(d.res),col="blue")
-abline(h=c(mean(d.res)-sd(d.res),mean(d.res)+sd(d.res)),col="blue",lty="dotted")
+abline(h=mean(x.res),col="blue")
+abline(h=c(mean(x.res)-sd(x.res),mean(x.res)+sd(x.res)),col="blue",lty="dotted")
+
+# par(mfrow=c(2,1))
+# plot(x, type="l", xlim=c(0,200))
+# plot(diff(x), type="l", xlim=c(0,200))
+
+par(mfrow=c(1,1))
 ```
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 library(tseries)
 # Augmented Dickey-Fuller Test za preverjanje stacionarnosti
-adf.test(d.res,alternative="stationary")
+adf.test(x.res,alternative="stationary")
 
 # we say: ro - 1 = gamma 
 # Ho : gamma = 0 -> random walk (not stationary)
@@ -226,7 +245,7 @@ adf.test(d.res,alternative="stationary")
 # this test is only appropriate if we remove seasonal and trend component
 # result: we reject Ho, so series is stationary!
 
-komentar <- paste('Augmented Dickey-Fuller Test ne zavrne stacionarnosti.')
+komentar <- paste('Augmented Dickey-Fuller Test potrdi stacionarnost.')
 print(komentar)
 ```
 
@@ -236,8 +255,8 @@ print(komentar)
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 library(forecast)
 
-Acf(d.res, main = "Acf residuals") #MA(1)
-Pacf(d.res, main = "Pacf residuals") #AR(3) # zdej spet pride 10??
+Acf(x.res, main = "Acf residuals") #MA(1)
+Pacf(x.res, main = "Pacf residuals") #AR(3) # zdej spet pride 10??
 
 #PREDLOG MODELA:
 komentar <- paste('Predlagava izbiro modela MA(1) in AR(10), torej ARMA(1,10).')
@@ -251,7 +270,7 @@ print(komentar)
 # ==========
 # ARMA model
 # ==========
-ar(d.res, arg = "yule–walker", aic=TRUE)
+ar(x.res, arg = "yule–walker", aic=TRUE)
 
 #Primerjajte ga z najboljšim modelom ARMA(p,q)
 
@@ -264,6 +283,16 @@ arima(d.res, order=c(0,0,1)) #aic = 8916.14
 # arima(d.res, order=c(0,0,2)) #aic = 8917.17
 # arima(d.res, order=c(3,0,0)) #aic = 9094.19 
 # arima(d.res, order=c(0,0,3)) #aic = 8918.41
+
+
+# for (i in 0:3) {
+#   for (j in 0:3) {
+#     print(c(arima(x.res, order=c(i,0,j))$aic, i, j))
+#     
+#   }
+#   
+# }
+# najboljši model je AR(3)
 
 #odločava se med: 1) AR(1) in MA(1), 
 #                 2) MA(1),
@@ -295,7 +324,7 @@ print(komentar)
 komentar <- paste('OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to MA(1).')
 print(komentar)
 
-best <- arima(d.res, order=c(0,0,1))
+best <- arima(x.res, order=c(3,0,0))
 plot(best$residuals)
 hist(best$residuals)
 
@@ -327,8 +356,13 @@ print(komentar)
 plot(periodogram(best$residuals)$lambda, periodogram(best$residuals)$periodogram, type="l")
 
 
+<<<<<<< HEAD
 Box.test(d.res, lag = 1, type="Box-Pierce") #p-value < 2.2e-16 # residuali od best modela
 Box.test(d.res, lag = 1, type="Ljung-Box") #p-value < 2.2e-16
+=======
+Box.test(x.res, lag = 1, type="Box-Pierce") #p-value < 2.2e-16
+Box.test(x.res, lag = 1, type="Ljung-Box") #p-value < 2.2e-16
+>>>>>>> cb39ec71dcbcdba5877493bea0eb45a5f6016db0
 
 
 #The P-Value of the Ljung-Box white noise test is greater than significance level (i.e. α), so we don't reject the white noise hypothesis (Ho), or, simply stated; there is no statistical evidence of a serial correlation, so the data can be white noise.
@@ -347,21 +381,27 @@ val1 <- prediction$pred
 sd1 <- prediction$se
 z <- 1.64
 
+<<<<<<< HEAD
 
 n <- length(d) + 1
 napoved <- mod.H2$coefficients[1] +  mod.H2$coefficients[2]*sin(perioda*n) +  mod.H2$coefficients[3]* cos(perioda*n)
 naslednji <- napoved + val1 #518.6
+=======
+n <- length(x) + 1
+napoved <- mod.H$coefficients[1] +  mod.H$coefficients[2]*sin(p*n) +  mod.H$coefficients[3]* cos(p*n)
+naslednji <- napoved + val1
+>>>>>>> cb39ec71dcbcdba5877493bea0eb45a5f6016db0
 optimal_interval <- c(napoved + val1 - z*sd1,napoved + val1+z*sd1)
 plot(x, type='l',xlim=c(750,840), main="Prediction")
 points(append(x, naslednji), main="Prediction", ylab="Value")
 points(append(x[829],naslednji), main="Prediction", ylab="Value", col='red')
 
 
-A <- predict(best,n.ahead=10, level = 0.90)$pred
+A <- predict(best,n.ahead=1, level = 0.90)$pred
 
 # Harmonic regression predictions
 
-B <- predict(mod.H2,n.ahead=10, level = 0.90)[819:828]
+B <- predict(mod.H,n.ahead=1, level = 0.90)[length(x)]
 
 
 # Predictions for differenced data
@@ -370,15 +410,15 @@ plot(A+B)
 
 # Undiferencing
 
-C <-  + (A+B)
-C <- ts(C,start=length(d))
+C <-  (A+B)
+C <- ts(C,start=length(x))
 
-X <- ts.union(d,C)
+X <- ts.union(x,C)
 
 plot(X,plot.type="single",
-     ylab="%",
      col=c("black","blue"),
-     xlim=c(700,840))
+     xlim=c(800,840))
+points(830, C, col="blue")
 
 legend("topright",
        c("Observed","Predicted"),
@@ -392,24 +432,380 @@ legend("topright",
 <h5> 9. Dobljeni napovedni interval primerjajte z napovednim intervalom, ki bi ga dobili, če bi naivno privzeli, da so podatki kar Gaussov beli šum – pred in po odstranitvi trenda in sezonskosti. </h5>
 
 ```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
-
+# tega nism nč spreminjala
 naive_gaussian <- mean(x)
 naive_gaussian_interval <- c(naive_gaussian - z*sd(x), naive_gaussian + z*sd(x))
 plot(append(x, naive_gaussian), type="l")
 
-better_gaussian <- napoved + mean(x.res) + (sd(x.res))/2
+better_gaussian <- napoved + mean(x.res) + (sd(x.res)^2)/2
 
 spodnja_meja <- napoved + mean(x.res) + (sd(x.res)^2)/2 - z * sqrt((sd(x.res))^2/length(x.res) + (sd(x.res)^4)/(2*(length(x.res)-1)))
 zgornja_meja <- napoved + mean(x.res) + (sd(x.res)^2)/2 + z * sqrt((sd(x.res))^2/length(x.res) + (sd(x.res)^4)/(2*(length(x.res)-1)))
 better_gaussian_interval <- c(spodnja_meja, zgornja_meja)
 
 
-plot(append(x, better_gaussian), type="l", xlim=c(600,850))
+plot(append(x, better_gaussian), type="l", xlim=c(600,850)) # ta šepa, ker sm dala nazaj na kvadrat sd
 plot(append(x, naslednji), type="l", xlim=c(700,850))
 plot(append(x, naive_gaussian), type="l", xlim=c(700,850))
 
 par(mfrow=c(1,1))
 ```
+
+
+<h1> DATOTEKA B, če diferenciramo </h1>
+
+<h5> 1. *Narišite graf in komentirajte, ali se iz njega vidi kakšen trend ali sezonskost.* </h5>
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+file2 <- file("B09los.txt")
+str_data2 <- readLines(file2)
+data2 <- as.numeric(unlist(strsplit(str_data2, " ")))
+x <- ts(data2)
+
+# vsa opazovanja:
+plot(x, main="Časovna vrsta podatki B, vsa opazovanja", type='l')
+
+komentar <- paste('Opazimo trend, na prvi pogled ne opazimo sezonskosti.')
+print(komentar)
+
+```
+
+<h5> 2. *Odstranite morebiten trend in sezonskost z metodami, uporabljenimi pri tečaju: (zaporedno) diferenciranje, logaritmiranje, neposredna ocena sezonskih komponent, polinomski trend stopnje največ 3 ali prileganje periodične funkcije (ali kakšna kombinacija teh metod). Potem ko odstranite morebiten trend, narišite tudi surovi in zglajeni periodogram ter komentirajte, ali se vidi kakšna sezonskost in kakšna naj bi bila perioda.* </h5>
+
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+#Opazujmo diferenco
+d <- diff(x)
+plot(d, main='Diferenca časovne vrste B', xlim = c(0,100), ylab=expression(paste(nabla,x[t])),type='l')
+
+abline(h=mean(d),col="blue")
+abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
+
+
+t <- time(d)
+summary(lm(d ~ t)) # ni več trenda!!
+
+perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
+perioda2 <- periodogram(d)$lambda[64]
+perioda3 <- periodogram(d)$lambda[88]
+# perioda4 <- periodogram(d)$lambda[4]
+# perioda5 <- periodogram(d)$lambda[64]
+# perioda6 <- periodogram(d)$lambda[99]
+# perioda7 <- periodogram(d)$lambda[10]
+
+
+summary(mod.H2 <- lm(d ~ I(sin(perioda*t)) + I(cos(perioda*t)) + I(sin(perioda2*t))))
+
+d.fit <- mod.H2$fitted.values
+d.res <- mod.H2$residuals
+
+d.fit <- ts(d.fit,start=start(d),frequency=frequency(d))
+d.res <- ts(d.res,start=start(d),frequency=frequency(d))
+
+par(mfrow=c(1,1))
+plot(d, type='l')
+points(d.fit,col="red",type="o",pch=16,cex=0.5)
+par(mfrow=c(1,1))
+plot(d, type='l', xlim=c(50,150))
+points(d.fit,col="red",type="o",pch=16,cex=0.5)
+
+```
+
+```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
+# Smoothed periodogram
+# ====================
+# Raw periodogram as a density estimator (identical numbers)
+
+spectrum(d,
+         log="no",
+         demean=TRUE,
+         detrend=FALSE,
+         taper=0,
+         lwd = 2)
+spectrum(d,
+         log="no",
+         demean=TRUE,
+         detrend=FALSE,
+         taper=0,
+         lwd = 2)
+# we have to smooth it! By using kernels!
+
+# Smoothing kernels
+kernel(coef='daniell',m=2) #2 steps to the left and 2 steps to the right
+kernel(coef='modified.daniell',m=1) #1 step left & 1 step right
+
+# Iterating smoothing kernels
+kernel(coef='daniell', m=c(1,1))
+kernel(coef='modified.daniell', m=c(1,1))
+
+# Visually choose kernel (Command spec.pgram does the same!)
+spectrum(d,
+         kernel=kernel(coef='modified.daniell', m=2),
+         log="no",
+         demean=TRUE,
+         detrend=FALSE,
+         taper=0)
+
+spectrum(d,
+         spans=7, # L = 2m+1 for Modified Daniell kernel (default); "rounds up" if even
+         log="no",
+         demean=TRUE,
+         detrend=FALSE,
+         taper=0)
+
+x.sp <- spectrum(d,
+                 kernel=kernel(coef='daniell', m=c(3,3)),
+                 log="no",
+                 demean=TRUE,
+                 detrend=FALSE,
+                 taper=0,
+                 lwd = 1.5,
+                 xlim=c(0.22,0.28))
+
+order(x.sp$spec,decreasing = TRUE)
+
+# Top frequencies at 216 217 215 218
+
+#SM. Periodogram
+x.sp$freq[c(113,114,112,115,111)]
+
+# Period
+1/x.sp$freq[c(113,114,112,115,111)] # perioda je 2.4 
+
+```
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+# DECOMPOSITION ČASOVNE VRSTE, a misliš, da bi blo to fajn?
+
+par(mfrow=c(2,1))
+
+my.trend <- function(t){coefficients(mod.H2)[1]}
+
+plot(rep(my.trend(1), length(mod.H2)), type="l",
+      main="Time series decomposition",
+      xlab="Time",
+      ylab="Trend")
+
+my.season <- function(t){coefficients(mod.H2)[2]*sin(perioda*t) + coefficients(mod.H2)[3] * I(cos(perioda*t)) + coefficients(mod.H2)[4]*sin(perioda2*t)}
+
+curve(my.season,from=0, to=length(mod.H2),
+      main="Time series decomposition",
+      xlab="Time",
+      ylab="Season")
+
+par(mfrow=c(1,1))
+
+```
+
+3. *Narišite graf rezidualov in komentirajte, ali so videti stacionarni. Stacionarnost tudi preizkusite z uporabo ustreznih statističnih metod.*
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+summary(mod.H2)$adj.r.squared # to je zelo nizko
+plot(d.res, main= 'Residuali časovne vrste B', ylab="Residuals",type='l')
+
+abline(h=mean(d.res),col="blue")
+abline(h=c(mean(d.res)-sd(d.res),mean(d.res)+sd(d.res)),col="blue",lty="dotted")
+# 
+# 
+library(tseries)
+# Augmented Dickey-Fuller Test za preverjanje stacionarnosti
+adf.test(d.res,alternative="stationary")
+# we say: ro - 1 = gamma
+# Ho : gamma = 0 -> random walk (not stationary)
+# H1 : gamma < 0 -> stationary series
+
+# this test is only appropriate if we remove seasonal and trend component
+# result: we reject Ho, so series is stationary!
+
+komentar <- paste('Augmented Dickey-Fuller Test potrdi stacionarnost.')
+print(komentar)
+
+
+```
+
+4. *Na rezidualih naredite grafikona ACF in PACF in na njuni podlagi predlagajte vsaj en model vrste AR(p) ali MA(q).*
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+library(forecast)
+
+Acf(d.res, main = "Acf residuals")# MA(1)
+Pacf(d.res, main = "Pacf residuals") # AR(3)
+
+
+#PREDLOG MODELA:
+komentar <- paste('Videti je, da imamo model ARMA(3,1).')
+print(komentar)
+
+```
+
+5. *Na podlagi Yule–Walkerjevih cenilk in kriterija AIC izberite najboljši model AR(p). Primerjajte ga z najboljšim modelom ARMA(p, q) za p + q ≤ 3 po kriteriju AIC (pozor: kriterij AIC je lahko definiran drugače od postopka do postopka). Če je videti smiselno, pa namesto tega uporabite model GARCH.*
+
+```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
+komentar <- paste('Profesor Toman je bil bolj eleganten in se je iskanja rešitve lotil s preprosto zanko.')
+print(komentar)
+
+arima(d.res, order=c(3,0,1))
+arima(d.res, order=c(0,0,1))
+
+# for (i in 0:3) {
+#   for (j in 0:3) {
+#     print(c(arima(d.res, order = c(i,0,j))$aic,i,j))
+#   }
+# }
+
+
+# my.arma <- stats::arima(d,order=c(1,0,1),include.mean=FALSE,method="ML")
+# 
+# AIC(my.arma)
+# 
+# ic.values <- matrix(NA,nrow=3,ncol=3,
+#                     dimnames=list(paste("AR=",0:2,sep=""),
+#                                   paste("MA=",0:2,sep="")))
+# ic.values[3,3] <- 1000
+# 
+# for(i in 1:3){
+#     for(j in 1:3){
+#         arima(d,order=c(i,0,j),include.mean=FALSE,method="ML")
+#     }
+# }
+# 
+# ic.values
+# 
+# which.min(ic.values)
+# 
+# ic.values == min(ic.values)
+
+komentar <- paste('Algoritem vrne predlog za model ARMA(0,1).')
+print(komentar)
+
+my.arma <- stats::arima(d,order=c(0,0,0),include.mean=FALSE,method="ML")
+
+# confint(my.arma,level=0.95)
+
+```
+
+
+6. *Izberite »optimalni« model in ocenite vse njegove parametre.*
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+# OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to AR(3). Druga možna izbira bi bila model z MA(1) in AR(2).
+komentar <- paste('OPTIMALNI MODEL: izberemo tisti model, ki ima najnižji aic. V najinem primeru je to ARMA(0,0).')
+print(komentar)
+
+best <- arima(d.res, order=c(0,0,1))
+plot(best$residuals)
+hist(best$residuals)
+
+#Normality test
+shapiro.test(best$residuals) #p-value < 2.2e-16
+
+#plot the results to check the normality
+xx <- seq(-100, 100, by=0.1)
+y1 <- dnorm(xx, mean=mean(best$residuals), sd=(sd(best$residuals)))
+plot(density(best$residuals),col="blue", main ="Normal density funcion comparison", xlab="x")
+lines(xx,y1, col="red")
+legend("topleft",
+       c("Residual density","Normal function"),
+       col=c("blue","red"),
+       lty="solid",
+       bty="n")
+
+# zdej pa je normalno porazdeljeno!
+komentar <- paste('Shapirov test zavrne hipotezo, torej ne gre za normalno porazdelitev, kar je očitno tudi z grafa.')
+print(komentar)
+```
+
+
+7. *Oglejte si ostanke po vašem modelu in komentirajte, ali so videti kot beli šum. Primerjajte njihovo porazdelitev z normalno.*
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+#odgovori
+#Če je white noise nobena frekvenca ni dominantna. Bi mogel biti graf dokaj raven
+
+plot(periodogram(best$residuals)$lambda, periodogram(best$residuals)$periodogram, type="l")
+
+
+Box.test(d.res, lag = 1, type="Box-Pierce") #p-value = 0.09239
+Box.test(d.res, lag = 1, type="Ljung-Box") #p-value = 0.09052
+
+
+#The P-Value of the Ljung-Box white noise test is greater than significance level (i.e. α), so we don't reject the white noise hypothesis (Ho), or, simply stated; there is no statistical evidence of a serial correlation, so the data can be white noise.
+
+komentar <- paste('Imamo white noise!')
+print(komentar)
+
+```
+
+8. *Z uporabo izbranega modela in pod predpostavko normalnosti z R-ovo funkcijo predict konstruirajte 90% napovedni interval za naslednjo vrednost. Ne pozabite vračunati tudi odstranjenega trenda in sezonskosti.*
+
+```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
+# ARMA predictions
+prediction <- predict(best, n.ahead = 10, interval = "prediction", level = 0.90)
+val1 <- prediction$pred
+sd1 <- prediction$se
+z <- 1.64
+
+n <- length(d) + 1
+napoved <- mod.H2$coefficients[1] +  mod.H2$coefficients[2]*sin(perioda*n) +  mod.H2$coefficients[3]* cos(perioda*n) + mod.H2$coefficients[4]*sin(perioda2*n)
+naslednji <- napoved + val1
+optimal_interval <- c(napoved + val1- z*sd1,napoved + val1+z*sd1)
+
+
+A <- predict(best,n.ahead=10, level = 0.90)$pred
+
+# Harmonic regression predictions
+
+B <- predict(mod.H2,n.ahead=10, level = 0.90)[251:260]
+
+# Predictions for differenced data
+
+plot(cumsum(A+B), type="l")
+
+# Undiferencing
+
+
+C <- cumsum(A+B)
+C <- ts(C,start=length(x))
+X <- ts.union(x,C)
+
+plot(X,plot.type="single",type="o",
+     ylab="%",
+     col=c("black","blue"))
+
+legend("topright",
+       c("Observed","Predicted"),
+       col=c("black","blue"),
+       lty="solid",
+       bty="n")
+
+```
+
+9. *Dobljeni napovedni interval primerjajte z napovednim intervalom, ki bi ga dobili, če bi naivno privzeli, da so podatki kar Gaussov beli šum – pred in po odstranitvi trenda in sezonskosti.*
+
+```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
+
+d.res
+naive_gaussian <- mean(x)
+z = 1.96
+naive_gaussian_interval <- c(naive_gaussian - z*sd(x), naive_gaussian + z*sd(x))
+plot(append(x, naive_gaussian), type="l")
+
+better_gaussian <- exp(napoved + mean(d.res) + (sd(d.res))/2)
+
+spodnja_meja <- napoved + mean(x.res) + (sd(x.res)^2)/2 - z * sqrt((sd(x.res))^2/length(x.res) + (sd(x.res)^4)/(2*(length(x.res)-1)))
+zgornja_meja <- napoved + mean(x.res) + (sd(x.res)^2)/2 + z * sqrt((sd(x.res))^2/length(x.res) + (sd(x.res)^4)/(2*(length(x.res)-1)))
+better_gaussian_interval <- c(spodnja_meja, zgornja_meja)
+
+
+plot(append(x, better_gaussian), type="l", xlim=c(200,270))
+plot(append(x, naslednji[1]), type="l", xlim=c(200,270))
+plot(append(x, naive_gaussian), type="l", xlim=c(200,270))
+
+
+par(mfrow=c(1,1))
+```
+
+
+
+
 
 <h1> DATOTEKA B, če logaritmiramo </h1>
 
