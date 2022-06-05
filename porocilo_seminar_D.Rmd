@@ -327,7 +327,7 @@ print(komentar)
 plot(periodogram(best$residuals)$lambda, periodogram(best$residuals)$periodogram, type="l")
 
 
-Box.test(d.res, lag = 1, type="Box-Pierce") #p-value < 2.2e-16
+Box.test(d.res, lag = 1, type="Box-Pierce") #p-value < 2.2e-16 # residuali od best modela
 Box.test(d.res, lag = 1, type="Ljung-Box") #p-value < 2.2e-16
 
 
@@ -347,9 +347,10 @@ val1 <- prediction$pred
 sd1 <- prediction$se
 z <- 1.64
 
+
 n <- length(d) + 1
 napoved <- mod.H2$coefficients[1] +  mod.H2$coefficients[2]*sin(perioda*n) +  mod.H2$coefficients[3]* cos(perioda*n)
-naslednji <- napoved + val1
+naslednji <- napoved + val1 #518.6
 optimal_interval <- c(napoved + val1 - z*sd1,napoved + val1+z*sd1)
 plot(x, type='l',xlim=c(750,840), main="Prediction")
 points(append(x, naslednji), main="Prediction", ylab="Value")
@@ -438,6 +439,9 @@ plot(d, main='Logaritem časovne vrste B', xlim = c(0,100), ylab=expression(past
 abline(h=mean(d),col="blue")
 abline(h=c(mean(d)-sd(d),mean(d)+sd(d)),col="blue",lty="dotted")
 
+
+# ne vzeti več period!! več period vzameš samo če so večkratniki osnovne periode
+
 perioda <-  periodogram(d)$lambda[which.max(periodogram(d)$periodogram)] 
 perioda2 <- periodogram(d)$lambda[5]
 perioda3 <- periodogram(d)$lambda[2]
@@ -518,8 +522,7 @@ x.sp <- spectrum(d,
                  demean=TRUE,
                  detrend=FALSE,
                  taper=0,
-                 lwd = 1.5,
-                 xlim=c(0.22,0.28))
+                 lwd = 1.5)
 
 order(x.sp$spec,decreasing = TRUE)
 
@@ -670,6 +673,8 @@ legend("topleft",
 
 komentar <- paste('Shapirov test zavrne hipotezo, torej ne gre za normalno porazdelitev, kar je očitno tudi z grafa.')
 print(komentar)
+
+# ne sme biti vrednosti pri -5, bi morala biti lepša slika - nesmemo logaritmirat!
 ```
 
 
@@ -696,7 +701,7 @@ print(komentar)
 
 ```{r, echo=TRUE, eval=TRUE, results="markup",echo=FALSE}
 # ARMA predictions
-prediction <- predict(best, n.ahead = 10, interval = "prediction", level = 0.90)
+prediction <- predict(best, n.ahead = 1, interval = "prediction", level = 0.90)
 val1 <- prediction$pred
 sd1 <- prediction$se
 z <- 1.64
