@@ -1,13 +1,19 @@
 ---
 title: "Časovne vrste - seminar"
-subtitle: "Poročilo o analizi časovnih vrst"
 author: "Brina Pirc in Anja Trobec"
 date: "Maj 2022"
 output:
+  word_document:
+    toc: no
+    toc_depth: '3'
   html_document:
     fig_caption: no
     toc: no
     toc_depth: '3'
+  pdf_document:
+    toc: no
+    toc_depth: '3'
+subtitle: Poročilo o analizi časovnih vrst
 params:
   printcode: no
   printresults: hide
@@ -26,7 +32,7 @@ library("TTR")
 
 
 ```{r, echo=TRUE, eval=TRUE, results="markup", echo=FALSE}
-setwd("C:/Users/aanja/OneDrive/Dokumenti/fmf/magisterij/časovne vrste/seminar/Time-series")
+setwd("C:/Users/Uporabnik/Documents/FAKS/MAGISTERIJ/Časovne vrste/Seminar/Time-series")
 ```
 
 
@@ -120,8 +126,6 @@ points(x.fit,col="red",type="o",pch=16,cex=0.5)
 # plot(d, type='l', xlim=c(0,100))
 # points(d.fit,col="red",type="o",pch=16,cex=0.5)
 ```
-
-
 
 
 
@@ -244,7 +248,7 @@ adf.test(x.res,alternative="stationary")
 # this test is only appropriate if we remove seasonal and trend component
 # result: we reject Ho, so series is stationary!
 
-komentar <- paste('Augmented Dickey-Fuller Test ne zavrne hipoteze o nestacionarnosti.')
+komentar <- paste('Augmented Dickey-Fuller Test zavrne hipotezo o nestacionarnosti, torej imamo stacionarnost.')
 print(komentar)
 ```
 
@@ -316,7 +320,7 @@ hist(best$residuals)
 shapiro.test(best$residuals) #p-value = 0.6376
 #From the output, the p-value > 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
 
-komentar <- paste('Shapirov test zavrne hipotezo in s tem sprejme normalno porazdelitev.')
+komentar <- paste('Shapirov test ne zavrne hipoteze, torej je porazdelitev značilno podobna normalni porazdelitvi.')
 print(komentar)
 
 
@@ -331,7 +335,7 @@ legend("topleft",
        lty="solid",
        bty="n")
 
-komentar <- paste('Tudi iz grafa je očitno, da gre za normalno porazdelitev.')
+komentar <- paste('Tudi z grafa je očitno, da gre za normalno porazdelitev.')
 print(komentar)
 ```
 
@@ -341,20 +345,18 @@ print(komentar)
 #odgovori
 #Če je white noise nobena frekvenca ni dominantna. Bi mogel biti graf dokaj raven
 
-plot(periodogram(best$residuals)$lambda, periodogram(best$residuals)$periodogram, type="l")
-
-
+plot(periodogram(best$residuals[2:414])$lambda, periodogram(best$residuals[2:414])$periodogram, type="l")
 
 # Box-Pierce test
 Box.test(x.res, lag = 1, type="Box-Pierce") #p-value = 0.7503
 
-komentar <- paste('Box-Pierceov test zavrne hipotezo in sprejme alternativo o belem šumu.')
+komentar <- paste('Box-Pierceov test ne zavrne hipoteze, torej gre za beli šum.')
 print(komentar)
 
 # Ljung-Box test
 Box.test(x.res, lag = 1, type="Ljung-Box") #p-value = 0.7498
 
-komentar <- paste('Ljung-Boxov test zavrne hipotezo in prav tako sprejme alternativo o belem šumu.')
+komentar <- paste('Ljung-Boxov test prav tako ne zavrne hipoteze, zato lahko sklepamo, da gre za beli šum.')
 print(komentar)
 
 
@@ -576,7 +578,7 @@ adf.test(d.res,alternative="stationary")
 # H1 : gamma < 0 -> stationary series
 # this test is only appropriate if we remove seasonal and trend component
 
-komentar <- paste('Augmented Dickey-Fuller Test ne zavrne hipoteze, torej nimamo stacionarnosti.')
+komentar <- paste('Augmented Dickey-Fuller Test zavrne hipotezo, torej imamo stacionarnost.')
 print(komentar)
 
 
@@ -626,7 +628,7 @@ hist(best$residuals)
 #Normality test
 shapiro.test(best$residuals) #p-value = 0.01039
 
-komentar <- paste('Shapirov test ne zavrne hipoteze, torej ne moremo sklepati o normalni porazdelitvi.') # to je malo sus
+komentar <- paste('Shapirov test zavrne hipotezo, torej imamo normalno porazdelitev.')
 print(komentar)
 
 #plot the results to check the normality
@@ -640,7 +642,7 @@ legend("topleft",
        lty="solid",
        bty="n")
 
-komentar <- paste('Shapirov test ne zavrne hipoteze, kljub temu, da je iz grafa razvidno drugače.')
+komentar <- paste('Shapirov test zavrne hipotezo, razvidno pa je tudi z grafa, da gre za normalno porazdelitev.')
 print(komentar)
 ```
 
@@ -655,13 +657,13 @@ plot(periodogram(best$residuals)$lambda, periodogram(best$residuals)$periodogram
 
 Box.test(d.res, lag = 1, type="Box-Pierce") #p-value = 3.331e-16
 
-komentar <- paste('Box-Pierceov test ne zavrne hipoteze, torej ne gre za beli šum.')
+komentar <- paste('Box-Pierceov test zavrne hipotezo, torej ne gre za beli šum.')
 print(komentar)
 
 
 Box.test(d.res, lag = 1, type="Ljung-Box") #p-value = 2.22e-16
 
-komentar <- paste('Ljung-Boxov test ne zavrne hipoteze, torej ne gre za beli šum.')
+komentar <- paste('Ljung-Boxov test prav tako zavrne hipotezo, ne gre za beli šum.')
 print(komentar)
 
 
